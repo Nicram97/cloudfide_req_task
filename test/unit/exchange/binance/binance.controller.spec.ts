@@ -6,6 +6,7 @@ import { ExchangeFactoryService } from '../../../../src/exchange/factory/exchang
 import { NotFoundException } from '@nestjs/common';
 import axios from 'axios';
 import { IAnalyzeResult } from '../../../../src/types/analyzeResult.interface';
+import { mockHistoricalResponse } from '../../mockData/mockHistoricalResponse';
 
 jest.mock('axios');
 export const mockHttpService = {
@@ -13,59 +14,6 @@ export const mockHttpService = {
     get: jest.fn(),
   },
 };
-
-export const mockHistoricalResponse = [
-  {
-    a: 2143528,
-    p: '87038.26000000',
-    q: '0.09389000',
-    f: 2200052,
-    l: 2200052,
-    T: 1740512330997,
-    m: false,
-    M: true,
-  },
-  {
-    a: 2143529,
-    p: '87038.26000000',
-    q: '0.08160000',
-    f: 2200053,
-    l: 2200053,
-    T: 1740512331011,
-    m: false,
-    M: true,
-  },
-  {
-    a: 2143530,
-    p: '87038.26000000',
-    q: '0.11141000',
-    f: 2200054,
-    l: 2200054,
-    T: 1740512331027,
-    m: false,
-    M: true,
-  },
-  {
-    a: 2143531,
-    p: '87050.16000000',
-    q: '0.00200000',
-    f: 2200055,
-    l: 2200055,
-    T: 1740512335421,
-    m: false,
-    M: true,
-  },
-  {
-    a: 2143532,
-    p: '87050.16000000',
-    q: '0.00616000',
-    f: 2200056,
-    l: 2200056,
-    T: 1740512336309,
-    m: false,
-    M: true,
-  },
-];
 
 describe('BinanceController', () => {
   let binanceController: BinanceController;
@@ -81,6 +29,10 @@ describe('BinanceController', () => {
     }).compile();
 
     binanceController = moduleRef.get(BinanceController);
+  });
+
+  afterAll(() => {
+    jest.resetAllMocks();
   });
 
   describe('fetchDefaultStrategy', () => {
