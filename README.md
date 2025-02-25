@@ -24,7 +24,4 @@ $ npm run start:dev
 ```bash
 # unit tests
 $ npm run test
-
-# e2e tests
-$ npm run test:e2e
 ```
