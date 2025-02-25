@@ -5,6 +5,7 @@ import { BinanceService } from '../../../../src/exchange/binance/binance.service
 import { ExchangeFactoryService } from '../../../../src/exchange/factory/exchangeFactory.service';
 import { NotFoundException } from '@nestjs/common';
 import axios from 'axios';
+import { IAnalyzeResult } from '../../../../src/types/analyzeResult.interface';
 
 jest.mock('axios');
 export const mockHttpService = {
@@ -139,6 +140,94 @@ describe('BinanceController', () => {
       } catch (e) {
         expect(e).toBeInstanceOf(Error);
         expect((e as Error).message).toEqual(notKnownErrorMessage);
+      }
+    });
+  });
+
+  describe('analyzeFetchedDefault', () => {
+    it('should return proper analyze object', async () => {
+      jest
+        .spyOn(mockHttpService.axiosRef, 'get')
+        .mockReturnValueOnce({ data: mockHistoricalResponse });
+
+      const expectedAnalyzeResult = {
+        firstTrade: {
+          a: 2143528,
+          p: '87038.26000000',
+          q: '0.09389000',
+          f: 2200052,
+          l: 2200052,
+          T: 1740512330997,
+          m: false,
+          M: true,
+        },
+        lastTrade: {
+          a: 2143532,
+          p: '87050.16000000',
+          q: '0.00616000',
+          f: 2200056,
+          l: 2200056,
+          T: 1740512336309,
+          m: false,
+          M: true,
+        },
+        percentageChange: '0.01367215',
+        absValueChange: '11.90000000',
+        startTime: 1740512330997,
+        endTime: 1740512336309,
+      } as IAnalyzeResult;
+
+      const result = await binanceController.analyzeFetchedDefault({
+        symbol: 'BTCUSDT',
+        limit: 5,
+      });
+
+      expect(result).toEqual(expectedAnalyzeResult);
+    });
+
+    it('should return no analyze object only 1 trade data available', async () => {
+      const binanceArr = [
+        {
+          a: 2143528,
+          p: '87038.26000000',
+          q: '0.09389000',
+          f: 2200052,
+          l: 2200052,
+          T: 1740512330997,
+          m: false,
+          M: true,
+        },
+      ];
+      jest
+        .spyOn(mockHttpService.axiosRef, 'get')
+        .mockReturnValueOnce({ data: binanceArr });
+
+      const result = await binanceController.analyzeFetchedDefault({
+        symbol: 'BTCUSDT',
+        limit: 5,
+      });
+
+      expect(result.percentageChange).toBe('0');
+      expect(result.absValueChange).toBe('0');
+      expect(result.startTime).toEqual(binanceArr[0].T);
+      expect(result.endTime).toEqual(binanceArr[0].T);
+      expect(result.firstTrade).toEqual(binanceArr[0]);
+      expect(result.lastTrade).toEqual(binanceArr[0]);
+    });
+
+    it('should throw 404 NotFoundException', async () => {
+      jest
+        .spyOn(mockHttpService.axiosRef, 'get')
+        .mockReturnValueOnce({ data: [] });
+
+      try {
+        await binanceController.analyzeFetchedDefault({
+          symbol: 'BTCUSDT',
+          limit: 5,
+        });
+      } catch (e) {
+        expect(e).toBeInstanceOf(NotFoundException);
+        expect((e as NotFoundException).message).toBe('No trades to analyze!');
       }
     });
   });
